@@ -4,7 +4,7 @@ export VM_DEV_USER=User
 export VM_DEV_PASS=demo
 export VM_DEV_ADMINUSER=Administrator
 export VM_DEV_ADMINPASS=demo
-export VM_DEV_MACHINE=WinDev2101Eval
+export VM_DEV_MACHINE=WinDev2301Eval
 ``` 
 And do `source .env`
 
@@ -16,7 +16,7 @@ And do `source .env`
 ### Create devel disk (or reuse previous one)
 `create-vm-disk.sh filename`
 ### Start VM
-`start-vm.sh`
+`vm-start.sh`
 ## Phase 2: Manual steps to enable execution from guest
 ### Enable Administrator account
 * Right-click the Start menu (or press Windows key + X) > Computer Management, then expand Local Users and Groups > Users.
@@ -86,3 +86,8 @@ copy-ssh-key.sh .ssh/id_rsa
 * vm-install-vcpkg.sh
 ### Vcpkg libraries:
 * vc-install-vcpkg-libs.sh
+
+
+https://learn.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2022
+
+Microsoft.VisualStudio.Workload.NativeDesktop
