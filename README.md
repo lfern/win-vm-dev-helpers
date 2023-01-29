@@ -96,6 +96,12 @@ copy-ssh-key.sh .ssh/id_rsa
 # TESTING
 ## Remove VM
 VBoxManage unregistervm --delete "Name of Virtual Machine"
+##
+```bash
+#!/bin/bash
+set -e
+# Any subsequent(*) commands which fail will cause the shell script to exit immediately
+```
 ## From host computer
 `source .env`
 ### Download win vm image
@@ -115,7 +121,7 @@ VBoxManage internalcommands passwordhash "password"
 VBoxManage setextradata $VM_DEV_MACHINE "VBoxAuthSimple/users/username" previous hash
 ```
 ### Start VM
-`vm-start.sh`
+`vm-start.sh` or `VBoxHeadless --startvm $VM_DEV_MACHINE`
 
 ## Manually in guest
 ### Activate admin user
