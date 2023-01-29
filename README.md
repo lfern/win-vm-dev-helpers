@@ -38,7 +38,7 @@ change-uac-settings
 uac-settings
 * If prompted by UAC, click on Yes to continue. Reboot your computer for the change to take effect.
 #### Option 2
-* Open Regedit and browse to this registry location: `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System`
+* Open Regedit and browse to this registry location: `HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Lsa`
 * In the right panel, set the value of the DWORD entry `EnableLUA` to 0:
 * If you do not have this DWORD entry, then create it.
 * Then reboot the computer.
@@ -86,6 +86,40 @@ copy-ssh-key.sh .ssh/id_rsa
 * vm-install-vcpkg.sh
 ### Vcpkg libraries:
 * vc-install-vcpkg-libs.sh
+
+
+
+
+# TESTING
+## From host computer
+`source .env`
+### Download win vm image
+`download-win-vm.sh`
+### Import OVA
+`import-ova.sh *.ova`
+### Start VM
+`vm-start.sh`
+
+## Manually in guest
+### Activate admin user
+`net user administrator /active:yes`
+### Change passwords "Demo" password
+`net user User Demo`
+`net user administrator Demo`
+### Disable UAC
+`reg HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t REG_DWORD /d 0 /f`
+
+## Back to from host computer
+### Install lang pack es-ES
+`vm-install-lang-es.sh`
+### Install lang list (need to be logged, why?)
+```bash
+vm-login-user.sh
+vm-install-lang-list.sh
+vm-logoff.sh
+```
+### Install c++ desktop in vs
+`vm-install-vs-desktop.sh`
 
 
 https://learn.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2022
