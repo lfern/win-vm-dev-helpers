@@ -25,6 +25,6 @@ VBoxManage controlvm $VM_DEV_MACHINE keyboardputscancode 1c 9c
 
 sleep 1
 
-VBoxManage controlvm $VM_DEV_MACHINE keyboardputstring "reg HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t REG_DWORD /d 0 /f"
+VBoxManage controlvm $VM_DEV_MACHINE keyboardputstring "reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t REG_DWORD /d 0 /f"
 VBoxManage controlvm $VM_DEV_MACHINE keyboardputscancode 1c 9c
 
