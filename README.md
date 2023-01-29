@@ -90,13 +90,30 @@ copy-ssh-key.sh .ssh/id_rsa
 
 
 
+
+
+
 # TESTING
+## Remove VM
+VBoxManage unregistervm --delete "Name of Virtual Machine"
 ## From host computer
 `source .env`
 ### Download win vm image
 `download-win-vm.sh`
 ### Import OVA
 `import-ova.sh *.ova`
+### Prepare for RDP
+```bash
+VBoxManage setproperty vrdeauthlibrary "VBoxAuthSimple"
+VBoxManage modifyvm $VM_DEV_MACHINE --vrde on
+VBoxManage modifyvm $VM_DEV_MACHINE --vrdeaddress 0.0.0.0
+VBoxManage modifyvm $VM_DEV_MACHINE --vrdeauthtype external
+```
+### Set password for user
+```bash
+VBoxManage internalcommands passwordhash "password"
+VBoxManage setextradata $VM_DEV_MACHINE "VBoxAuthSimple/users/username" previous hash
+```
 ### Start VM
 `vm-start.sh`
 
@@ -120,6 +137,7 @@ vm-logoff.sh
 ```
 ### Install c++ desktop in vs
 `vm-install-vs-desktop.sh`
+
 
 
 https://learn.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2022
