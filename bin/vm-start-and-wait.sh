@@ -84,7 +84,7 @@ execute_elevated_command "cmd.exe"
 #execute_in_cmd("net user administrator Demo")
 #execute_in_cmd("net user User Demo")
 #execute_in_cmd("reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t REG_DWORD /d 0 /f")
-execute_in_cmd("shutdown /s /t 0 /f")
+execute_in_cmd "shutdown /s /t 0 /f"
 
 while [ 1 == 1 ]; do
     "$SCRIPT_DIR/vm-is-running-sh"
