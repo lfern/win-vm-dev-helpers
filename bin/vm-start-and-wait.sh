@@ -4,7 +4,7 @@ set -e
 send_win_r() {
     # press WINDOWS KEY(E0 5B), press R(13), release WINDOWS KEY(E0DB), release R(93)
     VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputscancode E0 5B 13 E0 DB 93
-    sleep 2
+    sleep 5 
     return 0
 }
 
@@ -16,7 +16,7 @@ execute_command() {
     # press RETURN(1C=00011100), release RETURN(9C=10011100)
     # release key is press key code bitwise or 0x80 (most significant bit to 1) 
     VBoxManage controlvm $VM_DEV_MACHINE keyboardputscancode 1c 9c 
-    sleep 2
+    sleep 5 
     return 0
 }
 
@@ -33,7 +33,7 @@ execute_elevated_command() {
     sleep 2
     # press TAB(0f), release TAB(8f), repeat, press SPACE(39), release SPACE(b9)
     VBoxManage controlvm $VM_DEV_MACHINE keyboardputscancode 0f 8f 0f 8f 39 b9
-    sleep 2
+    sleep 5
 
     return 0
 }
@@ -45,13 +45,13 @@ execute_in_cmd() {
     # press RETURN(1C=00011100), release RETURN(9C=10011100)
     # release key is press key code bitwise or 0x80 (most significant bit to 1) 
     VBoxManage controlvm $VM_DEV_MACHINE keyboardputscancode 1c 9c 
-    sleep 2
+    sleep 5
     return 0
 }
 
 wait_windows_ready() {
     while [ 1 == 1 ]; do
-        echo "Try to execute"
+        echo "Check if windows is ready..."
         execute_command "cmd.exe /c echo logged > $1"
         sleep 5
         if [ -f "$file" ]; then
@@ -74,11 +74,12 @@ drive="z:\\"
 # add share to temp folder
 #"$SCRIPT_DIR/vm-add-share.sh" "$folder" "$drive"
 # start headless
-#"$SCRIPT_DIR/vm-start-headless.sh"
+"$SCRIPT_DIR/vm-start-headless.sh"
 # wait to windows to be ready creating this file
 wait_windows_ready "${drive}logged.txt"
 echo "Ready ..."
 
+echo "Executing commands..."
 execute_elevated_command "cmd.exe"
 #execute_in_cmd("net user administrator /active:yes")
 #execute_in_cmd("net user administrator Demo")
@@ -87,8 +88,12 @@ execute_elevated_command "cmd.exe"
 execute_in_cmd "shutdown /s /t 0 /f"
 
 while [ 1 == 1 ]; do
-    "$SCRIPT_DIR/vm-is-running-sh"
-    if [ "M$?" == "M1"]; then
+    result=`"$SCRIPT_DIR/vm-is-running.sh"`
+    if [ "M$result" == "M0" ]; then
         break
     fi
+    echo "Still running..."
+    sleep 5
 done
+
+sleep 5
