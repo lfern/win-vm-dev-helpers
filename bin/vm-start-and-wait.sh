@@ -72,7 +72,7 @@ folder=`realpath ./init-share`
 file="$folder/logged.txt"
 drive="z:\\"
 # add share to temp folder
-#"$SCRIPT_DIR/vm-add-share.sh" "$folder" "$drive"
+"$SCRIPT_DIR/vm-add-share.sh" "$folder" "$drive"
 # start headless
 "$SCRIPT_DIR/vm-start-headless.sh"
 # wait to windows to be ready creating this file
@@ -81,10 +81,10 @@ echo "Ready ..."
 
 echo "Executing commands..."
 execute_elevated_command "cmd.exe"
-#execute_in_cmd("net user administrator /active:yes")
-#execute_in_cmd("net user administrator Demo")
-#execute_in_cmd("net user User Demo")
-#execute_in_cmd("reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t REG_DWORD /d 0 /f")
+execute_in_cmd "net user administrator /active:yes"
+execute_in_cmd "net user administrator \"$VM_DEV_ADMINPASS\""
+execute_in_cmd "net user User \"$VM_DEV_PASS\""
+execute_in_cmd "reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t REG_DWORD /d 0 /f"
 execute_in_cmd "shutdown /s /t 0 /f"
 
 while [ 1 == 1 ]; do
