@@ -49,12 +49,13 @@ execute_in_cmd() {
     return 0
 }
 
+
 wait_windows_ready() {
     while [ 1 == 1 ]; do
         echo "Check if windows is ready..."
         execute_command "cmd.exe /c echo logged > $1"
         sleep 5
-        if [ -f "$file" ]; then
+        if [ -f "$1" ]; then
             break;
         fi
 
@@ -78,14 +79,22 @@ drive="z:\\"
 # wait to windows to be ready creating this file
 wait_windows_ready "${drive}logged.txt"
 echo "Ready ..."
+rm -f ./init-share/logged.txt
 
-echo "Executing commands..."
-execute_elevated_command "cmd.exe"
-execute_in_cmd "net user administrator /active:yes"
-execute_in_cmd "net user administrator \"$VM_DEV_ADMINPASS\""
-execute_in_cmd "net user User \"$VM_DEV_PASS\""
-execute_in_cmd "reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t REG_DWORD /d 0 /f"
-execute_in_cmd "shutdown /s /t 0 /f"
+while [ 1 == 1 ]; do 
+    echo "Executing commands..."
+    execute_elevated_command "cmd.exe"
+    execute_in_cmd "net user administrator /active:yes"
+    execute_in_cmd "net user administrator \"$VM_DEV_ADMINPASS\""
+    execute_in_cmd "net user User \"$VM_DEV_PASS\""
+    execute_in_cmd "reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t REG_DWORD /d 0 /f"
+    execute_in_cmd "shutdown /s /t 0 /f"
+    execute_in_cmd "echo logged > $1"
+    sleep 5
+    if [ -f "$1" ]; then
+        break;
+    fi
+done
 
 while [ 1 == 1 ]; do
     result=`"$SCRIPT_DIR/vm-isrunning.sh"`
