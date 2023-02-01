@@ -1,17 +1,48 @@
 #!/bin/sh
 set -e
 
-#VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" if not exist c:\\tools mkdir c:\\tools
+if [ "M$1" == "M" ]; then
+    echo "Uso: `basename $0` secret"
+fi
+SECRET=$1
+MYTMPFILE="$(mktemp)"
+trap 'rm -f -- "$MYTMPFILE"' EXIT
 
-#VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" if not exist c:\\tools\\jenkins-agent mkdir c:\\tools\\jenkins-agent
+echo <<EOF > "$MYTMPFILE"
+<service>
+  <id>jenkins-windows-agent</id>
+  <name>Jenkins Agent for Windows</name>
+  <description>This service runs the agent process connected to jenkins:8080</description>
+  <executable>c:\tools\jdk-11.0.18+10\bin\java.exe</executable>
+  <arguments>-jar c:\tools\jenkins-agent\agent.jar -jnlpUrl http://$VM_DEV_JENKINS_URL/computer/windows/jenkins-agent.jnlp -secret $SECRET -workDir "c:\tools\jenkins-agent"</arguments>
+  <log mode="roll" />
+  <onfailure action="restart" />
+    <serviceaccount>
+    <user>User</user>
+    <password>Demo</password>
+    <allowservicelogon>true</allowservicelogon>
+  </serviceaccount>
+</service>
+EOF
 
-#VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" powershell.exe -command "\$ProgressPreference = 'SilentlyContinue';Invoke-WebRequest https://aka.ms/download-jdk/microsoft-jdk-11.0.18-windows-x64.zip -OutFile c:\tools\microsoft-jdk-11.0.18-windows-x64.zip"
+VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" if not exist c:\\tools mkdir c:\\tools
+
+VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" if not exist c:\\tools\\jenkins-agent mkdir c:\\tools\\jenkins-agent
+
+VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" powershell.exe -command "\$ProgressPreference = 'SilentlyContinue';Invoke-WebRequest https://aka.ms/download-jdk/microsoft-jdk-11.0.18-windows-x64.zip -OutFile c:\tools\microsoft-jdk-11.0.18-windows-x64.zip"
+
+VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" powershell.exe -command "Add-Type -Assembly 'System.IO.Compression.Filesystem';[System.IO.Compression.ZipFile]::ExtractToDirectory('c:\\tools\\microsoft-jdk-11.0.18-windows-x64.zip', 'c:\\tools')"
 
 VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" powershell.exe -command "\$ProgressPreference = 'SilentlyContinue';Invoke-WebRequest https://github.com/winsw/winsw/releases/download/v3.0.0-alpha.11/WinSW-x64.exe -OutFile c:\tools\jenkins-agent\jenkins-agent.exe"
 
-#VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" powershell.exe -command "Add-Type -Assembly 'System.IO.Compression.Filesystem';[System.IO.Compression.ZipFile]::ExtractToDirectory('c:\\tools\\microsoft-jdk-11.0.18-windows-x64.zip', 'c:\\tools')"
+VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" copyto "$MYTMPFILE" --target-directory "c:\\tools\\jenkins-agent\\jenkins-agent.xml"
 
+VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" powershell.exe -command "\$ProgressPreference = 'SilentlyContinue';Invoke-WebRequest $VM_DEV_JENKINS_URL/jnlpJars/agent.jar -OutFile c:\tools\jenkins-agent\agent.jar"
 
-#VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" powershell.exe -command "\$ProgressPreference = 'SilentlyContinue';Invoke-WebRequest http://192.168.0.11:8001/jnlpJars/agent.jar -OutFile c:\tools\jenkins-agent\agent.jar"
+set +e
 
+VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" c:\\tools\\jenkins-agent\\jenkins-agent.exe install
 
+VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" c:\\tools\\jenkins-agent\\jenkins-agent.exe start
+
+VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" c:\\tools\\jenkins-agent\\jenkins-agent.exe status
