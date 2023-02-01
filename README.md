@@ -95,7 +95,7 @@ copy-ssh-key.sh .ssh/id_rsa
 
 # TESTING
 ## Remove VM
-VBoxManage unregistervm --delete "Name of Virtual Machine"
+VBoxManage unregistervm --delete "$VM_DEV_MACHINE"
 ##
 ```bash
 #!/bin/bash
