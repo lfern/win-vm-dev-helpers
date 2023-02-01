@@ -51,14 +51,15 @@ execute_in_cmd() {
 
 
 wait_windows_ready() {
+    local file="$1"
+    local localfile="$2"
     while [ 1 == 1 ]; do
         echo "Check if windows is ready..."
-        execute_command "cmd.exe /c echo logged > $1"
+        execute_command "cmd.exe /c echo logged > $file"
         sleep 5
-        if [ -f "$1" ]; then
+        if [ -f "$localfile" ]; then
             break;
         fi
-
         echo "Sleep 20 seconds"
         sleep 20
     done
@@ -70,16 +71,19 @@ wait_windows_ready() {
 mkdir -p ./init-share
 rm -f ./init-share/logged.txt
 folder=`realpath ./init-share`
-file="$folder/logged.txt"
+localfile="$folder/logged.txt"
 drive="z:\\"
+file="${drive}logged.txt"
 # add share to temp folder
 "$SCRIPT_DIR/vm-add-share.sh" "$folder" "$drive"
 # start headless
 "$SCRIPT_DIR/vm-start-headless.sh"
 # wait to windows to be ready creating this file
-wait_windows_ready "${drive}logged.txt"
+wait_windows_ready "$file" "$localfile"
 echo "Ready ..."
-rm -f ./init-share/logged.txt
+rm -f "$localfile"
+
+set +e
 
 while [ 1 == 1 ]; do 
     echo "Executing commands..."
@@ -88,13 +92,20 @@ while [ 1 == 1 ]; do
     execute_in_cmd "net user administrator \"$VM_DEV_ADMINPASS\""
     execute_in_cmd "net user User \"$VM_DEV_PASS\""
     execute_in_cmd "reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t REG_DWORD /d 0 /f"
+    execute_in_cmd "echo logged > $file"
     execute_in_cmd "shutdown /s /t 0 /f"
-    execute_in_cmd "echo logged > $1"
-    sleep 5
-    if [ -f "$1" ]; then
+    sleep 10 
+    result=`"$SCRIPT_DIR/vm-isrunning.sh"`
+    if [ "M$result" == "M0" ]; then
+        break
+    fi
+
+    if [ -f "$localfile" ]; then
         break;
     fi
 done
+
+set -e
 
 while [ 1 == 1 ]; do
     result=`"$SCRIPT_DIR/vm-isrunning.sh"`
