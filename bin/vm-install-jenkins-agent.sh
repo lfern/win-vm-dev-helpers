@@ -1,12 +1,13 @@
 #!/bin/bash
 set -e
 
-if [ "M$1" == "M" ]; then
-    echo "Uso: `basename $0` secret"
+if [ "M$2" == "M" ]; then
+    echo "Uso: `basename $0` agent-name agent-secret"
     exit -1
 fi
 
-SECRET=$1
+NAME=$1
+SECRET=$2
 MYTMPFILE="$(mktemp)"
 trap 'rm -f -- "$MYTMPFILE"' EXIT
 
@@ -16,7 +17,7 @@ cat <<EOF > "$MYTMPFILE"
   <name>Jenkins Agent for Windows</name>
   <description>This service runs the agent process connected to jenkins:8080</description>
   <executable>c:\tools\jdk-11.0.18+10\bin\java.exe</executable>
-  <arguments>-jar c:\tools\jenkins-agent\agent.jar -jnlpUrl $VM_DEV_JENKINS_URL/computer/windows/jenkins-agent.jnlp -secret $SECRET -workDir "c:\tools\jenkins-agent"</arguments>
+  <arguments>-jar c:\tools\jenkins-agent\agent.jar -jnlpUrl $VM_DEV_JENKINS_URL/computer/$NAME/jenkins-agent.jnlp -secret $SECRET -workDir "c:\tools\jenkins-agent"</arguments>
   <log mode="roll" />
   <onfailure action="restart" />
     <serviceaccount>
