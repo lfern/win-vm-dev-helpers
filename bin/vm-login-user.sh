@@ -14,7 +14,7 @@ VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputscancode 1c 9c
 
 IS_LOGGED=0
 for i in {1..10}; do
-    "$SCRIPT_DIR/vm-islogged.sh" > /dev/null
+    vm_islogged -m "$VM_DEV_MACHINE" > /dev/null
     if [ "M$?" == "M1" ]; then
         IS_LOGGED=1
         break
