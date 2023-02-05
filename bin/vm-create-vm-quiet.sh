@@ -1,5 +1,20 @@
 #!/bin/bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+restore_set() {
+    local SAVED_OPTIONS
+    SAVED_OPTIONS=$(set +o)
+    trap eval "$SAVED_OPTIONS" EXIT
+}
+
+track_last_command() {
+    # keep track of the last executed command
+    trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
+    # echo an error message before exiting
+    trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
+}
+
+restore_set
+track_last_command
 set -e
 
 #"$SCRIPT_DIR/download-win-vm.sh"

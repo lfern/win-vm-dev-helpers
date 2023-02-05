@@ -11,11 +11,11 @@ send_win_r() {
 execute_command() {
     send_win_r
     # write command
-    VBoxManage controlvm $VM_DEV_MACHINE keyboardputstring "$1"
+    VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputstring "$1"
     sleep 2
     # press RETURN(1C=00011100), release RETURN(9C=10011100)
     # release key is press key code bitwise or 0x80 (most significant bit to 1) 
-    VBoxManage controlvm $VM_DEV_MACHINE keyboardputscancode 1c 9c 
+    VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputscancode 1c 9c 
     sleep 5 
     return 0
 }
@@ -23,16 +23,16 @@ execute_command() {
 execute_elevated_command() {
     send_win_r
     # write command
-    VBoxManage controlvm $VM_DEV_MACHINE keyboardputstring "$1"
+    VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputstring "$1"
     sleep 2
     # press CTRL(1d), press LEFT SHIFT(1a), press return(1c), release return(9c)
-    VBoxManage controlvm $VM_DEV_MACHINE keyboardputscancode 1d 2a 1c 9c
+    VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputscancode 1d 2a 1c 9c
     sleep 1
     # release LEFT SHIFT(aa), release CTRL(9d)
-    VBoxManage controlvm $VM_DEV_MACHINE keyboardputscancode aa 9d
+    VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputscancode aa 9d
     sleep 2
     # press TAB(0f), release TAB(8f), repeat, press SPACE(39), release SPACE(b9)
-    VBoxManage controlvm $VM_DEV_MACHINE keyboardputscancode 0f 8f 0f 8f 39 b9
+    VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputscancode 0f 8f 0f 8f 39 b9
     sleep 5
 
     return 0
@@ -40,11 +40,11 @@ execute_elevated_command() {
 
 execute_in_cmd() {
     # write command
-    VBoxManage controlvm $VM_DEV_MACHINE keyboardputstring "$1"
+    VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputstring "$1"
     sleep 2
     # press RETURN(1C=00011100), release RETURN(9C=10011100)
     # release key is press key code bitwise or 0x80 (most significant bit to 1) 
-    VBoxManage controlvm $VM_DEV_MACHINE keyboardputscancode 1c 9c 
+    VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputscancode 1c 9c 
     sleep 5
     return 0
 }
@@ -53,7 +53,7 @@ execute_in_cmd() {
 wait_windows_ready() {
     local file="$1"
     local localfile="$2"
-    while [ 1 == 1 ]; do
+    while : ; do
         echo "Check if windows is ready..."
         execute_command "cmd.exe /c echo logged > $file"
         sleep 5
@@ -67,10 +67,26 @@ wait_windows_ready() {
     return 0
 }
 
+restore_set() {
+    local SAVED_OPTIONS
+    SAVED_OPTIONS=$(set +o)
+    trap eval "$SAVED_OPTIONS" EXIT
+}
+
+track_last_command() {
+    # keep track of the last executed command
+    trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
+    # echo an error message before exiting
+    trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
+}
+
+restore_set
+track_last_command
+
 # create temp folder
 mkdir -p ./init-share
 rm -f ./init-share/logged.txt
-folder=`realpath ./init-share`
+folder=$(realpath ./init-share)
 localfile="$folder/logged.txt"
 drive="z:\\"
 file="${drive}logged.txt"
@@ -85,7 +101,7 @@ rm -f "$localfile"
 
 set +e
 
-while [ 1 == 1 ]; do 
+while : ; do 
     echo "Executing commands..."
     execute_elevated_command "cmd.exe"
     execute_in_cmd "net user administrator /active:yes"
@@ -95,7 +111,7 @@ while [ 1 == 1 ]; do
     execute_in_cmd "echo logged > $file"
     execute_in_cmd "shutdown /s /t 0 /f"
     sleep 10 
-    result=`"$SCRIPT_DIR/vm-isrunning.sh"`
+    result=$("$SCRIPT_DIR/vm-isrunning.sh")
     if [ "M$result" == "M0" ]; then
         break
     fi
@@ -107,8 +123,8 @@ done
 
 set -e
 
-while [ 1 == 1 ]; do
-    result=`"$SCRIPT_DIR/vm-isrunning.sh"`
+while : ; do
+    result=$("$SCRIPT_DIR/vm-isrunning.sh")
     if [ "M$result" == "M0" ]; then
         break
     fi

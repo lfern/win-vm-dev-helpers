@@ -2,8 +2,8 @@
 set -e
 
 if [ "M$2" == "M" ]; then
-    echo "Uso: `basename $0` agent-name agent-secret"
-    exit -1
+    echo "Uso: $(basename "$0") agent-name agent-secret"
+    exit 1
 fi
 
 NAME=$1
@@ -27,7 +27,7 @@ cat <<EOF > "$MYTMPFILE"
   </serviceaccount>
 </service>
 EOF
-cat $MYTMPFILE
+cat "$MYTMPFILE"
 VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" if not exist c:\\tools mkdir c:\\tools
 
 VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_USER" --password "$VM_DEV_PASS" run --exe "cmd.exe" -- "cmd.exe" "/c" if not exist c:\\tools\\jenkins-agent mkdir c:\\tools\\jenkins-agent
