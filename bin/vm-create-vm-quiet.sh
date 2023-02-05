@@ -17,9 +17,6 @@ vm_start_headless
 "$SCRIPT_DIR/vm-wait4run.sh"
 echo "Installing vs desktop..."
 "$SCRIPT_DIR/vm-install-vs-desktop.sh"
-echo "Installing rust..."
-"$SCRIPT_DIR/vm-install-rust.sh"
-"$SCRIPT_DIR/vm-install-rustpath.sh"
 echo "Installing choco..."
 "$SCRIPT_DIR/vm-install-choco.sh"
 echo "Installing git..."
@@ -28,6 +25,11 @@ echo "Installing git..."
 echo "Setting powershell policy remotesigned..."
 vm_powershell Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
 
+
+"$SCRIPT_DIR/vm-login-user.sh"
+echo "Installing rust..."
+"$SCRIPT_DIR/vm-install-rust.sh"
+"$SCRIPT_DIR/vm-logoff.sh"
 
 echo "Stop machine..."
 vm_stop

@@ -1,9 +1,9 @@
 #!/bin/bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-result=`VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_ADMINUSER" --password "$VM_DEV_ADMINPASS" run --exe "cmd.exe" -- "cmd.exe" "/c" powershell.exe query user`
+result=$(VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_ADMINUSER" --password "$VM_DEV_ADMINPASS" run --exe "cmd.exe" -- "cmd.exe" "/c" powershell.exe query user)
 if [ "M$result" != "M"  ]; then
-    result=`tail -n +2 <<< $result`
+    result=$(tail -n +2 <<< $result)
     read -r user console session other <<< $result
     echo Closing session $session for user $user
     VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_ADMINUSER" --password "$VM_DEV_ADMINPASS" run --exe "cmd.exe" -- "cmd.exe" "/c" powershell.exe logoff $session
@@ -23,6 +23,6 @@ if [ "M$result" != "M"  ]; then
         exit 0
     else
         echo "Could not logout"
-        exit -1
+        exit 1
     fi
 fi
