@@ -24,6 +24,13 @@ echo "Installing choco..."
 echo "Installing git..."
 "$SCRIPT_DIR/vm-install-git.sh"
 "$SCRIPT_DIR/vm-install-gitpath.sh"
-echo "Installing vs desktop..."
+echo "Setting powershell policy remotesigned..."
 vm_powershell Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
 
+
+echo "Stop machine..."
+vm_stop
+vm_wait_windows_stopped
+
+echo "Start headless"
+vm_start_headless

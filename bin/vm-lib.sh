@@ -86,7 +86,34 @@ vm_isrunning() {
     parse_options result "$@"
     shift "${result[0]}"
     machine="${result[3]}"
+
     vboxmanage showvminfo "$machine" | grep -c "running (since"
+    return 0
+}
+
+#######################################
+# Wait windows stopped
+# Options:
+#   Machine to be executed on
+#######################################
+vm_wait_windows_stopped() {
+    local machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    machine="${result[3]}"
+
+    #local machine="${3:-$VM_DEV_MACHINE}"
+
+    while : ; do
+        echo "Check if windows is stopped..."
+        result=$(vm_isrunning -m "$machine")
+        if [ "M$result" == "M0" ]; then
+            break;
+        fi
+        echo "Sleep 20 seconds"
+        sleep 20
+    done
+
     return 0
 }
 
@@ -191,10 +218,11 @@ vm_execute_in_cmd() {
 }
 
 #######################################
-# Execute command vm
+# Wait windows ready to receive commands
 # Arguments:
 #   File
 #   Local file
+# Options:
 #   Machine to be executed on
 #######################################
 vm_wait_windows_ready() {
@@ -209,7 +237,7 @@ vm_wait_windows_ready() {
 
     while : ; do
         echo "Check if windows is ready..."
-        vm_execute_command "cmd.exe /c echo logged > $file"
+        vm_execute_command -m "$machine" "cmd.exe /c echo logged > $file"
         sleep 5
         if [ -f "$localfile" ]; then
             break;
@@ -222,7 +250,7 @@ vm_wait_windows_ready() {
 }
 
 #######################################
-# Execute command vm
+# Copy from
 # Arguments:
 #   From file
 #   To file
@@ -246,7 +274,7 @@ vm_copy_from() {
 }
 
 #######################################
-# Execute command vm
+# Copy to
 # Arguments:
 #   From file
 #   To file
