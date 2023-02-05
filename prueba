@@ -1,0 +1,9 @@
+#!/bin/bash
+. bin/vm-lib.sh
+
+parse_options result "$@"
+shift "${result[0]}"
+declare -p result 
+echo "${result[1]}" "${result[2]}" "${result[3]}"
+
+echo "$@"

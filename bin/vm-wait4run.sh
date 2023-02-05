@@ -21,7 +21,7 @@ wait_user_ready4commands() {
 # create temp folder
 mkdir -p ./init-share
 rm -f ./init-share/logged.txt
-folder=`realpath ./init-share`
+folder=$(realpath ./init-share)
 localfile="$folder/logged.txt"
 drive="z:\\"
 file="${drive}logged.txt"

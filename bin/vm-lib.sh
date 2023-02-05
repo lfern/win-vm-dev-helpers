@@ -2,6 +2,39 @@
 #
 # Some util funcs
 
+parse_options() {
+    local -n ret=$1
+    shift
+    ret[0]=1
+    ret[1]="${VM_DEV_USER}"
+    ret[2]="${VM_DEV_PASS}"
+    ret[3]="${VM_DEV_MACHINE}"
+    
+    local OPTIND
+
+    OPTIND=1
+    while getopts 'u:p:m:' opt; do
+        case "$opt" in
+            u)
+            ret[1]="$OPTARG"
+            ;;
+            
+            p)
+            ret[2]="$OPTARG"
+            ;;
+            
+            m)
+            ret[3]="$OPTARG"
+            ;;
+
+            *)
+            ;;
+        esac
+    done
+    #shift "$(($OPTIND -1))"
+    ret[0]="$(($OPTIND -1))"
+}
+
 #######################################
 # Restore set 
 #######################################
@@ -48,7 +81,11 @@ exit_on_error() {
 #######################################
 vm_isrunning() {
     # local machine="${1:?machine-name is missing}"
-    local machine="${1:-$VM_DEV_MACHINE}"
+    # local machine="${1:-$VM_DEV_MACHINE}"
+    local machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    machine="${result[3]}"
     vboxmanage showvminfo "$machine" | grep -c "running (since"
     return 0
 }
@@ -59,7 +96,11 @@ vm_isrunning() {
 #   Machine to be executed on
 #######################################
 vm_send_win_r() {
-    local machine="${1:-$VM_DEV_MACHINE}"
+    #local machine="${1:-$VM_DEV_MACHINE}"
+    local machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    machine="${result[3]}"
     # press WINDOWS KEY(E0 5B), press R(13), release WINDOWS KEY(E0DB), release R(93)
     VBoxManage controlvm "$machine" keyboardputscancode E0 5B 13 E0 DB 93
     sleep 5 
@@ -69,11 +110,18 @@ vm_send_win_r() {
 #######################################
 # Execute command in vm
 # Arguments:
+#   Command to execute
 #   Machine to be executed on
 #######################################
 vm_execute_command() {
+    local machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    machine="${result[3]}"
+
     local command="${1:?command is missing}"
-    local machine="${2:-$VM_DEV_MACHINE}"
+    #local machine="${2:-$VM_DEV_MACHINE}"
+
     send_win_r "$machine"
     # write command
     VBoxManage controlvm "$machine" keyboardputstring "$command"
@@ -88,11 +136,18 @@ vm_execute_command() {
 #######################################
 # Execute elevated command vm
 # Arguments:
+#   Command execute
 #   Machine to be executed on
 #######################################
 vm_execute_elevated_command() {
+    local machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    machine="${result[3]}"
+
     local command="${1:?command is missing}"
-    local machine="${2:-$VM_DEV_MACHINE}"
+    #local machine="${2:-$VM_DEV_MACHINE}"
+
     send_win_r "$machine"
     # write command
     VBoxManage controlvm "$machine" keyboardputstring "$command"
@@ -113,11 +168,18 @@ vm_execute_elevated_command() {
 #######################################
 # Execute command vm
 # Arguments:
+#   Command to execute
 #   Machine to be executed on
 #######################################
 vm_execute_in_cmd() {
+    local machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    machine="${result[3]}"
+
     local command="${1:?command is missing}"
-    local machine="${2:-$VM_DEV_MACHINE}"
+    #local machine="${2:-$VM_DEV_MACHINE}"
+
     # write command
     VBoxManage controlvm "$machine" keyboardputstring "$command"
     sleep 2
@@ -131,12 +193,20 @@ vm_execute_in_cmd() {
 #######################################
 # Execute command vm
 # Arguments:
+#   File
+#   Local file
 #   Machine to be executed on
 #######################################
 vm_wait_windows_ready() {
+    local machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    machine="${result[3]}"
+
     local file="${1:?file is missing}"
     local localfile="${2:?local-file is missing}"
-    local machine="${3:-$VM_DEV_MACHINE}"
+    #local machine="${3:-$VM_DEV_MACHINE}"
+
     while : ; do
         echo "Check if windows is ready..."
         execute_command "cmd.exe /c echo logged > $file"
@@ -149,4 +219,202 @@ vm_wait_windows_ready() {
     done
 
     return 0
+}
+
+#######################################
+# Execute command vm
+# Arguments:
+#   From file
+#   To file
+#   Machine to be executed on
+#######################################
+vm_copy_from() {
+    local user pass machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    user="${result[1]}"
+    pass="${result[2]}"
+    machine="${result[3]}"
+
+    local from_file="${1:?file is missing}"
+    local to_file="${2:?local-file is missing}"
+    #local machine="${3:-$VM_DEV_MACHINE}"
+    #local user="${4:-$VM_DEV_USER}"
+    #local pass="${5:-$VM_DEV_PASS}"
+
+    VBoxManage guestcontrol "$machine" --username "$user" --password "$pass" copyfrom "$from_file" "$to_file" 
+}
+
+#######################################
+# Execute command vm
+# Arguments:
+#   From file
+#   To file
+#   Machine to be executed on
+#   User
+#   Pass
+#######################################
+vm_copy_to() {
+    local user pass machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    user="${result[1]}"
+    pass="${result[2]}"
+    machine="${result[3]}"
+    
+    local from_file="${1:?file is missing}"
+    local to_file="${2:?local-file is missing}"
+    #local machine="${3:-$VM_DEV_MACHINE}"
+    #local user="${4:-$VM_DEV_USER}"
+    #local pass="${5:-$VM_DEV_PASS}"
+
+    VBoxManage guestcontrol "$machine" --username "$user" --password "$pass" copyto "$from_file" "$to_file" 
+}
+
+#######################################
+# Execute command, for user
+# Options:
+#   -m Machine to be executed on
+#   -u User to be executed on
+#   -p Pass for user
+#######################################
+vm_run() {
+    local user pass machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    user="${result[1]}"
+    pass="${result[2]}"
+    machine="${result[3]}"
+    
+    VBoxManage guestcontrol "$machine" --username "$user" --password "$pass" run --exe "cmd.exe" -- cmd.exe /c "$@"
+
+}
+
+#######################################
+# Start vm
+# Options:
+#   -m Machine to be executed on
+#######################################
+vm_start() {
+    local machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    machine="${result[3]}"
+
+    VBoxManage startvm "$machine"
+}
+
+#######################################
+# Start vm headless mode
+# Options:
+#   -m Machine to be executed on
+#######################################
+vm_start_headless() {
+    local machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    machine="${result[3]}"
+
+    VBoxManage startvm "$machine" --type headless
+}
+
+
+#######################################
+# Stop machine, executing command for user
+# Options:
+#   -m Machine to be executed on
+#   -u User to be executed on
+#   -p Pass for user
+#######################################
+vm_stop() {
+    local user pass machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    user="${result[1]}"
+    pass="${result[2]}"
+    machine="${result[3]}"
+
+    VBoxManage guestcontrol "$machine" --username "$user" --password "$pass" run --exe "cmd.exe" -- "cmd" "/c" "shutdown /s /t 0 /f"
+}
+
+#######################################
+# Reboot, executing command for user
+# Options:
+#   -m Machine to be executed on
+#   -u User to be executed on
+#   -p Pass for user
+#######################################
+vm_reboot() {
+    local user pass machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    user="${result[1]}"
+    pass="${result[2]}"
+    machine="${result[3]}"
+
+    VBoxManage guestcontrol "$machine" --username "$user" --password "$pass" run --exe "cmd.exe" -- "cmd" "/c" "shutdown /r /t 0 /f"
+}
+
+#######################################
+# Check user is logged
+# Options:
+#   -m Machine to be executed on
+#   -u User to be executed on
+#   -p Pass for user
+# Outputs:
+#   1 if user is logged, else 0
+#######################################
+vm_islogged() {
+    local user pass machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    user="${result[1]}"
+    pass="${result[2]}"
+    machine="${result[3]}"
+
+    result=$(VBoxManage guestcontrol "$machine" --username "$user" --password "$pass" run --exe "cmd.exe" -- "cmd.exe" "/c" powershell.exe query user)
+    if [ "M$result" != "M"  ]; then
+        echo 1
+    else
+        echo 0
+    fi
+
+}
+
+#######################################
+# Execute command in powershell
+# Options:
+#   -m Machine to be executed on
+#   -u User to be executed on
+#   -p Pass for user
+#######################################
+vm_powershell() {
+    local user pass machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    user="${result[1]}"
+    pass="${result[2]}"
+    machine="${result[3]}"
+
+    VBoxManage guestcontrol "$machine" --username "$user" --password "$pass" run --exe "cmd.exe" -- "cmd.exe" "/c" powershell.exe "$@"
+}
+
+#######################################
+# Add share to vm
+# Arguments:
+#   Host folder
+#   Guest mount point
+# Options:
+#   -m Machine to be executed on
+#######################################
+vm_add_share() {
+    parse_options result "$@"
+    shift "${result[0]}"
+    machine="${result[3]}"
+    local host_folder="${1:?host-folder is missing}"
+    local guest_mount_point="${2:?guest-mount-point is missing}"
+    local machine
+
+    VBoxManage sharedfolder add "$machine" --name "init-share" --hostpath "$host_folder" --automount --auto-mount-point "$guest_mount_point"
+
 }

@@ -3,7 +3,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 "$SCRIPT_DIR/vm-islogged.sh" > /dev/null
 if [ "M$?" == "M1" ]; then
     echo "User still logged"
-    exit -1
+    exit 1
 fi
 
 VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputstring " "
@@ -40,7 +40,7 @@ fi
 
 if [ $IS_LOGGED == 0 ]; then 
     echo "Could not log"
-    exit -1
+    exit 1
 else
     echo "Logged"
     exit 0
