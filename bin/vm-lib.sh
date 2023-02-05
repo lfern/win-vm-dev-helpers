@@ -209,7 +209,7 @@ vm_wait_windows_ready() {
 
     while : ; do
         echo "Check if windows is ready..."
-        execute_command "cmd.exe /c echo logged > $file"
+        vm_execute_command "cmd.exe /c echo logged > $file"
         sleep 5
         if [ -f "$localfile" ]; then
             break;

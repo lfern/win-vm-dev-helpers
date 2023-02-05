@@ -15,9 +15,9 @@ localfile="$folder/logged.txt"
 drive="z:\\"
 file="${drive}logged.txt"
 # add share to temp folder
-"$SCRIPT_DIR/vm-add-share.sh" "$folder" "$drive"
+vm_add_share "$folder" "$drive"
 # start headless
-"$SCRIPT_DIR/vm-start-headless.sh"
+vm_start_headless
 # wait to windows to be ready creating this file
 vm_wait_windows_ready "$file" "$localfile"
 echo "Ready ..."
