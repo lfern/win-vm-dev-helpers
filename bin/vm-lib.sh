@@ -122,7 +122,7 @@ vm_execute_command() {
     local command="${1:?command is missing}"
     #local machine="${2:-$VM_DEV_MACHINE}"
 
-    send_win_r "$machine"
+    wm_send_win_r "$machine"
     # write command
     VBoxManage controlvm "$machine" keyboardputstring "$command"
     sleep 2
