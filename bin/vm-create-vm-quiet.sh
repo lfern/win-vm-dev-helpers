@@ -25,6 +25,8 @@ echo "Installing git..."
 echo "Setting powershell policy remotesigned..."
 vm_powershell Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
 
+vm_run "mkdir c:\\Users\\User\\.ssh"
+vm_run "ssh-keyscan -H bitbucket.org >> c:\\Users\\User\\.ssh\\known_hosts"
 
 "$SCRIPT_DIR/vm-login-user.sh"
 echo "Installing rust..."
@@ -38,3 +40,5 @@ vm_wait_windows_stopped
 echo "Start headless"
 vm_start_headless
 "$SCRIPT_DIR/vm-wait4run.sh"
+
+vm_run cargo install cargo-make
