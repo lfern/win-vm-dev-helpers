@@ -1,5 +1,6 @@
 #!/bin/bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+. "$SCRIPT_DIR/vm-lib.sh"
 
 result=$(VBoxManage guestcontrol "$VM_DEV_MACHINE" --username "$VM_DEV_ADMINUSER" --password "$VM_DEV_ADMINPASS" run --exe "cmd.exe" -- "cmd.exe" "/c" powershell.exe query user)
 if [ "M$result" != "M"  ]; then
@@ -10,7 +11,7 @@ if [ "M$result" != "M"  ]; then
 
     IS_LOGGED=1
     for i in {1..10}; do
-        "$SCRIPT_DIR/vm-islogged.sh" > /dev/null
+        vm_islogged -m "$VM_DEV_MACHINE"> /dev/null
         if [ "M$?" == "M0" ]; then
             IS_LOGGED=0
             break
