@@ -1,6 +1,6 @@
 #!/bin/bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-"$SCRIPT_DIR/vm-islogged.sh" > /dev/null
+vm_islogged -m "$VM_DEV_MACHINE" > /dev/null
 if [ "M$?" == "M1" ]; then
     echo "User still logged"
     exit 1
