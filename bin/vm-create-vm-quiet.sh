@@ -1,9 +1,8 @@
 #!/bin/bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 restore_set() {
-    local SAVED_OPTIONS
     SAVED_OPTIONS=$(set +o)
-    trap eval "$SAVED_OPTIONS" EXIT
+    trap 'eval "$SAVED_OPTIONS"' EXIT
 }
 
 track_last_command() {

@@ -47,7 +47,8 @@ exit_on_error() {
 #   1 if machine is running, else 0
 #######################################
 vm_isrunning() {
-    local machine="${1:?machine-name is missing}"
+    # local machine="${1:?machine-name is missing}"
+    local machine="${1:-$VM_DEV_MACHINE}"
     vboxmanage showvminfo "$machine" | grep -c "running (since"
     return 0
 }
@@ -58,7 +59,7 @@ vm_isrunning() {
 #   Machine to be executed on
 #######################################
 vm_send_win_r() {
-    local machine="${1:?machine-name is missing}"
+    local machine="${1:-$VM_DEV_MACHINE}"
     # press WINDOWS KEY(E0 5B), press R(13), release WINDOWS KEY(E0DB), release R(93)
     VBoxManage controlvm "$machine" keyboardputscancode E0 5B 13 E0 DB 93
     sleep 5 
@@ -71,10 +72,11 @@ vm_send_win_r() {
 #   Machine to be executed on
 #######################################
 vm_execute_command() {
-    local machine="${1:?machine-name is missing}"
+    local command="${1:?command is missing}"
+    local machine="${2:-$VM_DEV_MACHINE}"
     send_win_r "$machine"
     # write command
-    VBoxManage controlvm "$machine" keyboardputstring "$1"
+    VBoxManage controlvm "$machine" keyboardputstring "$command"
     sleep 2
     # press RETURN(1C=00011100), release RETURN(9C=10011100)
     # release key is press key code bitwise or 0x80 (most significant bit to 1) 
@@ -89,10 +91,11 @@ vm_execute_command() {
 #   Machine to be executed on
 #######################################
 vm_execute_elevated_command() {
-    local machine="${1:?machine-name is missing}"
+    local command="${1:?command is missing}"
+    local machine="${2:-$VM_DEV_MACHINE}"
     send_win_r "$machine"
     # write command
-    VBoxManage controlvm "$machine" keyboardputstring "$1"
+    VBoxManage controlvm "$machine" keyboardputstring "$command"
     sleep 2
     # press CTRL(1d), press LEFT SHIFT(1a), press return(1c), release return(9c)
     VBoxManage controlvm "$machine" keyboardputscancode 1d 2a 1c 9c
@@ -113,12 +116,14 @@ vm_execute_elevated_command() {
 #   Machine to be executed on
 #######################################
 vm_execute_in_cmd() {
+    local command="${1:?command is missing}"
+    local machine="${2:-$VM_DEV_MACHINE}"
     # write command
-    VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputstring "$1"
+    VBoxManage controlvm "$machine" keyboardputstring "$command"
     sleep 2
     # press RETURN(1C=00011100), release RETURN(9C=10011100)
     # release key is press key code bitwise or 0x80 (most significant bit to 1) 
-    VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputscancode 1c 9c 
+    VBoxManage controlvm "$machine" keyboardputscancode 1c 9c 
     sleep 5
     return 0
 }
@@ -129,9 +134,9 @@ vm_execute_in_cmd() {
 #   Machine to be executed on
 #######################################
 vm_wait_windows_ready() {
-    local machine="${1:?machine-name is missing}"
     local file="${1:?file is missing}"
     local localfile="${2:?local-file is missing}"
+    local machine="${3:-$VM_DEV_MACHINE}"
     while : ; do
         echo "Check if windows is ready..."
         execute_command "cmd.exe /c echo logged > $file"
