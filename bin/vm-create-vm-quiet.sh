@@ -1,6 +1,6 @@
 #!/bin/bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-. "$SCRIPT_BIN/vm-lib.sh"
+. "$SCRIPT_DIR/vm-lib.sh"
 
 track_last_command
 set -e
