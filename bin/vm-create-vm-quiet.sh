@@ -19,6 +19,7 @@ echo "Installing vs desktop..."
 "$SCRIPT_DIR/vm-install-vs-desktop.sh"
 echo "Installing rust..."
 "$SCRIPT_DIR/vm-install-rust.sh"
+"$SCRIPT_DIR/vm-install-rustpath.sh"
 echo "Installing choco..."
 "$SCRIPT_DIR/vm-install-choco.sh"
 echo "Installing git..."
@@ -34,3 +35,4 @@ vm_wait_windows_stopped
 
 echo "Start headless"
 vm_start_headless
+"$SCRIPT_DIR/vm-wait4run.sh"
