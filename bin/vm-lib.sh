@@ -408,13 +408,55 @@ vm_powershell() {
 #   -m Machine to be executed on
 #######################################
 vm_add_share() {
+    local machine
     parse_options result "$@"
     shift "${result[0]}"
     machine="${result[3]}"
     local host_folder="${1:?host-folder is missing}"
     local guest_mount_point="${2:?guest-mount-point is missing}"
-    local machine
 
     VBoxManage sharedfolder add "$machine" --name "init-share" --hostpath "$host_folder" --automount --auto-mount-point "$guest_mount_point"
 
+}
+
+#######################################
+# acpi power button
+# Options:
+#   -m Machine to be executed on
+#######################################
+vm_acpipowerbutton () {
+    local machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    machine="${result[3]}"
+
+    VBoxManage controlvm "$machine" acpipowerbutton
+}
+
+#######################################
+# poweroff
+# Options:
+#   -m Machine to be executed on
+#######################################
+vm_poweroff() {
+    local machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    machine="${result[3]}"
+
+    VBoxManage controlvm "$machine" poweroff
+}
+
+#######################################
+# reset
+# Options:
+#   -m Machine to be executed on
+#######################################
+vm_reset() {
+    local machine
+    parse_options result "$@"
+    shift "${result[0]}"
+    machine="${result[3]}"
+
+    VBoxManage controlvm "$machine" reset
 }
