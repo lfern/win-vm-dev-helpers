@@ -1,5 +1,7 @@
 #!/bin/bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+. "$SCRIPT_DIR/vm-lib.sh"
+
 vm_islogged -m "$VM_DEV_MACHINE" > /dev/null
 if [ "M$?" == "M1" ]; then
     echo "User still logged"
@@ -29,7 +31,7 @@ if [ $IS_LOGGED == 0 ]; then
     VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputstring "$VM_DEV_PASS"
     VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputscancode 1c 9c 
     for i in {1..10}; do
-        "$SCRIPT_DIR/vm-islogged.sh" > /dev/null
+        vm_islogged -m "$VM_DEV_MACHINE" > /dev/null
         if [ "M$?" == "M1" ]; then
             IS_LOGGED=1
             break
