@@ -46,7 +46,7 @@ fi
 
 vm_run powershell.exe -command "\$ProgressPreference = 'SilentlyContinue';Invoke-WebRequest https://github.com/winsw/winsw/releases/download/v3.0.0-alpha.11/WinSW-x64.exe -OutFile c:\tools\jenkins-agent\jenkins-agent.exe"
 
-vm_copyto "$MYTMPFILE" "c:\\tools\\jenkins-agent\\jenkins-agent.xml"
+vm_copy_to "$MYTMPFILE" "c:\\tools\\jenkins-agent\\jenkins-agent.xml"
 
 vm_run powershell.exe -command "\$ProgressPreference = 'SilentlyContinue';Invoke-WebRequest $VM_DEV_JENKINS_URL/jnlpJars/agent.jar -OutFile c:\tools\jenkins-agent\agent.jar"
 
