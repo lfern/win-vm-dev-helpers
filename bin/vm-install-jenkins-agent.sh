@@ -36,8 +36,9 @@ vm_run if not exist c:\\tools mkdir c:\\tools
 
 vm_run if not exist c:\\tools\\jenkins-agent mkdir c:\\tools\\jenkins-agent
 
+set +e
 java_installed=$(vm_run 'if EXIST c:\\tools\\jdk-11.0.18+10 echo|set /p=1')
-
+set -e
 if [ "M$java_installed" != "M1" ]; then
   vm_run powershell.exe -command "\$ProgressPreference = 'SilentlyContinue';Invoke-WebRequest https://aka.ms/download-jdk/microsoft-jdk-11.0.18-windows-x64.zip -OutFile c:\tools\microsoft-jdk-11.0.18-windows-x64.zip"
 
