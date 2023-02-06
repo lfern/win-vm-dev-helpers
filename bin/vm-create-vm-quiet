@@ -6,24 +6,24 @@ track_last_command
 set -e
 
 echo "Downloading VM file ..."
-"$SCRIPT_DIR/download-win-vm.sh"
+"$SCRIPT_DIR/download-win-vm"
 echo "Importing ova ..."
-"$SCRIPT_DIR/import-ova.sh" ./*.ova
+"$SCRIPT_DIR/import-ova" ./*.ova
 echo "Setting VRDE config"
-"$SCRIPT_DIR/vm-set-vrde.sh" lfern "$VM_DEV_VRDEPASS"
+"$SCRIPT_DIR/vm-set-vrde" "$VM_DEV_VRDEUSER" "$VM_DEV_VRDEPASS"
 echo "Init..."
-"$SCRIPT_DIR/vm-init.sh"
+"$SCRIPT_DIR/vm-init"
 echo "Start headless"
 vm_start_headless
-"$SCRIPT_DIR/vm-wait4run.sh"
+"$SCRIPT_DIR/vm-wait4run"
 echo "Installing vs desktop..."
-"$SCRIPT_DIR/vm-install-vs-desktop.sh"
+"$SCRIPT_DIR/vm-install-vs-desktop"
 echo "Installing choco..."
-"$SCRIPT_DIR/vm-install-choco.sh"
+"$SCRIPT_DIR/vm-install-choco"
 echo "Installing git..."
-"$SCRIPT_DIR/vm-install-git.sh"
-"$SCRIPT_DIR/vm-install-gitpath.sh"
-"$SCRIPT_DIR/vm-install-carbon.sh"
+"$SCRIPT_DIR/vm-install-git"
+"$SCRIPT_DIR/vm-install-gitpath"
+"$SCRIPT_DIR/vm-install-carbon"
 echo "Setting powershell policy remotesigned..."
 vm_powershell Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
 
@@ -32,10 +32,10 @@ vm_powershell "Import-Module 'Carbon';Grant-CPrivilege -Identity \"$VM_DEV_USER\
 vm_run "mkdir c:\\Users\\User\\.ssh"
 vm_run "ssh-keyscan -H bitbucket.org >> c:\\Users\\User\\.ssh\\known_hosts"
 
-"$SCRIPT_DIR/vm-login-user.sh"
+"$SCRIPT_DIR/vm-login-user"
 echo "Installing rust..."
-"$SCRIPT_DIR/vm-install-rust.sh"
-"$SCRIPT_DIR/vm-logoff.sh"
+"$SCRIPT_DIR/vm-install-rust"
+"$SCRIPT_DIR/vm-logoff"
 
 echo "Stop machine..."
 vm_stop
@@ -43,6 +43,6 @@ vm_wait_windows_stopped
 
 echo "Start headless"
 vm_start_headless
-"$SCRIPT_DIR/vm-wait4run.sh"
+"$SCRIPT_DIR/vm-wait4run"
 
 vm_run cargo install cargo-make

@@ -1,151 +1,87 @@
+# Virtual Machine Creation Automatization for Development
+
+## Environment variables and paths
 Create .env file with required env variables:
-``` 
+```bash 
+# User name shipped with provided Windows virtual machine
 export VM_DEV_USER=User
-export VM_DEV_PASS=demo
+# Selected password for User
+export VM_DEV_PASS=whatever-password
+# Administrator user
 export VM_DEV_ADMINUSER=Administrator
-export VM_DEV_ADMINPASS=demo
-export VM_DEV_MACHINE=WinDev2301Eval
+# Selected password for Administrator
+export VM_DEV_ADMINPASS=choose-your-password
+# Machine name
+export VM_DEV_MACHINE=your-machine-name
+# Number of CPUs
+export VM_DEV_CPUS=2
+# Assigned memory
+export VM_DEV_MEMORY=4096
+# VRDE Username
+export VM_DEV_VRDEUSER=your-username-for-vrde
+# VRDE Password
+export VM_DEV_VRDEPASS=password-for-vrde
+# Jenkins base URL
+export VM_DEV_JENKINS_URL=jenkins-base-url
 ``` 
-And do `source .env`
+Also, you can add these lines to add the bin directory to the path and load some function utils from vm-lib.sh file
 
-## Phase 1: Download and create VM
-### Download win vm image
-`download-win-vm.sh`
-### Import OVA
-`import-ova.sh vm_windows.ova`
-### Create devel disk (or reuse previous one)
-`create-vm-disk.sh filename`
-### Start VM
-`vm-start.sh`
-## Phase 2: Manual steps to enable execution from guest
-### Enable Administrator account
-* Right-click the Start menu (or press Windows key + X) > Computer Management, then expand Local Users and Groups > Users.
-* Select the Administrator account, right click on it then click Properties. Uncheck Account is disabled, click Apply then OK.
-### Disable a Windows Security Policy
-* In “Run” type “gpedit.msc”, then go to “Windows Settings” -> “Security Settings” -> “Local Policies” -> “Security Options” -> “Accounts: Limit local account use of blank passwords to console logon only” and set it to DISABLED. A reboot may be needed for the changes to take effect.
-* If you are running Windows 7 Home and you don’t have Group Policy Editor installed, you can open regedit.exe (Windows Registry) and browse to the following registry key (you’ll need Administrator rights to change it):
+```bash
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]:-$0}"; )" &> /dev/null && pwd 2> /dev/null; )";
+if [[ :$PATH: != *:"$SCRIPT_DIR":* ]] ; then
+    export PATH=$PATH:"$SCRIPT_DIR/bin"
+    . "$SCRIPT_DIR/bin/vm-lib.sh"
+fi
 ```
-HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Lsa
-Then change the DWORD value “LimitBlankPasswordUse” to 0 (that means disabled).
+Then load .env file `source .env`.
+
+## Create VM, configure and install some apps
+All these steps is coded in the `vm-create-vm-quiet` script. It is a first try to create a unnattended script to create a windows virtual machine used for development purposes, e.g. a jenkins windows agent to compile rust project.
+### Create and initialize VM
+```bash
+# Download win vm image
+download-win-vm
+# Import OVA
+import-ova *.ova
+# Enable VRDE (0.0.0.0) and set VRDE credentials (if needed)
+vm-set-vrde "$VM_DEV_VRDEUSER" "$VM_DEV_VRDEPASS"
+# Initialize VM (Activate Administrator User,
+#  set Administrator password, set User password
+#  and disable UAC
+vm-init
 ```
-### Disable UAC
-#### Option 1
-* Open the Control Panel in Windows 10. Set the View by option to Large icons, and then click User Accounts.
-user-accounts
-* Click on the Change User Account Control settings link.
-change-uac-settings
-* In order to turn off UAC, move the slider to the bottom (Never Notify) and click OK. If you want to turn on UAC, move the silder to the top (Always notify).
-uac-settings
-* If prompted by UAC, click on Yes to continue. Reboot your computer for the change to take effect.
-#### Option 2
-* Open Regedit and browse to this registry location: `HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Lsa`
-* In the right panel, set the value of the DWORD entry `EnableLUA` to 0:
-* If you do not have this DWORD entry, then create it.
-* Then reboot the computer.
-#### Option 3
+### Install apps, service logon rights and add keys to ssh known_hosts file
+```bash
+# install visual studio desktop C development
+vm-install-vs-desktop
+# install choco
+vm-install-choco
+# install git and add to path
+vm-install-git
+vm-install-gitpath
+# install carbon (needed to add service logon right privilege to User, so it can be used in windows services)
+vm-install-carbon
+# set powershell policy remotesigned
+vm_powershell Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
+# Grant service logon right to User
+vm_powershell "Import-Module 'Carbon';Grant-CPrivilege -Identity \"$VM_DEV_USER\" -Privilege SeServiceLogonRight"
+# Add bitbucket to known_hosts file
+vm_run "mkdir c:\\Users\\User\\.ssh"
+vm_run "ssh-keyscan -H bitbucket.org >> c:\\Users\\User\\.ssh\\known_hosts"
+# Install rust
+vm-install-rust
+# Install cargo-make complement
+vm_run cargo install cargo-make
 ```
-Windows Registry Editor Version 5.00
-
-; Created by: Shawn Brink
-; Created on: June 20th 2018
-; Tutorial: https://www.tenforums.com/tutorials/112612-enable-disable-uac-prompt-built-administrator-windows.html
-
-
-[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System]
-"ValidateAdminCodeSignatures"=dword:00000000
+## Install jenkins agent
+```bash
+vm-install-jenkins jenkins-agent-name jenkins-agent-secret
 ```
-### Set User and Administrator passwords
-* Press `Win-r`.
-* In the dialog box, type `compmgmt`. msc , and then press Enter.
-* Expand Local Users and Groups and select the Users folder.
-* Right-click the Administrator account and select Password.
-* (Same for User)
-* Update .env file with new passwords
-
-## Phase 3: Initialize created disk
-`init_vm_disk.sh`
-
-## Phase 4: Install some utils
-### Ssh key for git
-Copy your keys, but it should be decrypted so you could execute git commands from guest:
-```
-copy-ssh-key.sh .ssh/id_rsa.pub
-copy-ssh-key.sh .ssh/known_hosts
-copy-ssh-key.sh .ssh/id_rsa 
-...
-```
-### Programs
-* vm-install-choco.sh
-* vm-install-chrome.sh
-* vm-install-git.sh
-* vm-install-gitpath.sh
-* vm-install-jre.sh
-* vm-install-node.sh
-* vm-install-nsis.sh
-* vm-install-python.sh
-* vm-install-vcpkg.sh
-### Vcpkg libraries:
-* vc-install-vcpkg-libs.sh
+* jenkins-agent-name: name assigned to this agent in jenkins server (just like it is showed in the jenkins agent URL e.g: in this url: http://192.168.0.17:8001/manage/computer/win%2Drust/jenkins-agent.jnlp, the agent name would be win%2Drust).
 
 
-
-
-
-
-
-# TESTING
-## Remove VM
+### Remove machine
+Just if you need to remove the machine
+```bash
 VBoxManage unregistervm --delete "$VM_DEV_MACHINE"
-##
-```bash
-#!/bin/bash
-set -e
-# Any subsequent(*) commands which fail will cause the shell script to exit immediately
 ```
-## From host computer
-`source .env`
-### Download win vm image
-`download-win-vm.sh`
-### Import OVA
-`import-ova.sh *.ova`
-### Prepare for RDP
-```bash
-VBoxManage setproperty vrdeauthlibrary "VBoxAuthSimple"
-VBoxManage modifyvm $VM_DEV_MACHINE --vrde on
-VBoxManage modifyvm $VM_DEV_MACHINE --vrdeaddress 0.0.0.0
-VBoxManage modifyvm $VM_DEV_MACHINE --vrdeauthtype external
-```
-### Set password for user
-```bash
-VBoxManage internalcommands passwordhash "password"
-VBoxManage setextradata $VM_DEV_MACHINE "VBoxAuthSimple/users/username" previous hash
-```
-### Start VM
-`vm-start.sh` or `VBoxHeadless --startvm $VM_DEV_MACHINE`
-
-## Manually in guest
-### Activate admin user
-`net user administrator /active:yes`
-### Change passwords "Demo" password
-`net user User Demo`
-`net user administrator Demo`
-### Disable UAC
-`reg HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t REG_DWORD /d 0 /f`
-
-## Back to from host computer
-### Install lang pack es-ES
-`vm-install-lang-es.sh`
-### Install lang list (need to be logged, why?)
-```bash
-vm-login-user.sh
-vm-install-lang-list.sh
-vm-logoff.sh
-```
-### Install c++ desktop in vs
-`vm-install-vs-desktop.sh`
-
-
-
-https://learn.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio?view=vs-2022
-
-Microsoft.VisualStudio.Workload.NativeDesktop
