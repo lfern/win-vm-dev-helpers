@@ -30,13 +30,13 @@ if [ $IS_LOGGED == 0 ]; then
     sleep 3;
     VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputstring "$VM_DEV_PASS"
     VBoxManage controlvm "$VM_DEV_MACHINE" keyboardputscancode 1c 9c 
-    for i in {1..10}; do
+    for i in {1..40}; do
         vm_islogged -m "$VM_DEV_MACHINE" > /dev/null
         if [ "M$?" == "M1" ]; then
             IS_LOGGED=1
             break
         fi
-        sleep 1
+        sleep 5
     done
 fi
 
