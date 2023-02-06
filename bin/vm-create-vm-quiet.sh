@@ -5,7 +5,8 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 track_last_command
 set -e
 
-#"$SCRIPT_DIR/download-win-vm.sh"
+echo "Downloading VM file ..."
+"$SCRIPT_DIR/download-win-vm.sh"
 echo "Importing ova ..."
 "$SCRIPT_DIR/import-ova.sh" ./*.ova
 echo "Setting VRDE config"
