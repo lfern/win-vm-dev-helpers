@@ -26,7 +26,7 @@ echo "Installing git..."
 echo "Setting powershell policy remotesigned..."
 vm_powershell Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
 
-vm_powershell Grant-Privilege -Identity "$VM_DEV_USER" -Privilege SeServiceLogonRight
+vm_powershell "Import-Module 'Carbon';Grant-CPrivilege -Identity \"$VM_DEV_USER\" -Privilege SeServiceLogonRight"
 
 vm_run "mkdir c:\\Users\\User\\.ssh"
 vm_run "ssh-keyscan -H bitbucket.org >> c:\\Users\\User\\.ssh\\known_hosts"
