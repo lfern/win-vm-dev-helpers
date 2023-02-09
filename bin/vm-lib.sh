@@ -578,7 +578,7 @@ vm_parse_yaml() {
       if(match(value,/^\*/)){
          ref=anchor[substr(value,2)];
          if(length(ref)==0){
-           printf(\"%s=\\\"%s\\\"\n\", full_vn, value);
+           printf(\"export %s=\\\"%s\\\"\n\", full_vn, value);
          } else {
            for(val in assignment){
               if((length(ref)>0)&&index(val, ref)==1){
@@ -587,14 +587,14 @@ vm_parse_yaml() {
                  if(match(val,\"$separator\$\")){
                     gsub(ref,full_vn,tmpval);
                  } else if (length(tmpval) > 0) {
-                    printf(\"%s=\\\"%s\\\"\n\", val, tmpval);
+                    printf(\"export %s=\\\"%s\\\"\n\", val, tmpval);
                  }
                  assignment[val]=tmpval;
               }
            }
          }
       } else if (length(value) > 0) {
-         printf(\"%s=\\\"%s\\\"\n\", full_vn, value);
+         printf(\"export %s=\\\"%s\\\"\n\", full_vn, value);
       }
    }END{
       for(val in assignment){
