@@ -608,6 +608,7 @@ vm_config_prefix() {
     echo "${VMPREFIX:-"VM_"}"
 }
 vm_load_conf() {
+    vm_unload_conf
     local prefix
     prefix="$(vm_config_prefix)"
     eval $(vm_parse_yaml "$1" "$prefix")
