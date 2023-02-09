@@ -1,0 +1,16 @@
+#!/bin/bash
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+. "$SCRIPT_DIR/vm-lib.sh"
+
+track_last_command
+set -e
+
+index=1
+prefix=$(vm_config_prefix)
+while : ; do
+    combined="${prefix}installscript_${index}"
+    if [ -z ${!combined+x} ]; then break; fi
+    echo $index "->" "${!combined}"
+    eval "${!combined}"
+    index=$((index+1))
+done
