@@ -599,7 +599,7 @@ vm_parse_yaml() {
    }END{
       for(val in assignment){
          if(match(val,\"$separator\$\"))
-            printf(\"%s=\\\"%s\\\"\n\", val, assignment[val]);
+            printf(\"export %s=\\\"%s\\\"\n\", val, assignment[val]);
       }
    }"
 }
@@ -623,17 +623,17 @@ vm_load_conf() {
     local vrdeaddress_var=${prefix}"vrde_address"
     local vrdeport_var=${prefix}"vrde_port"
     # old variables
-    VM_DEV_USER="${!user_var}"
-    VM_DEV_PASS="${!pass_var}"
-    VM_DEV_ADMINUSER="${!adminuser_var}"
-    VM_DEV_ADMINPASS="${!adminpass_var}"
-    VM_DEV_MACHINE="${!machine_var}"
-    VM_DEV_CPUS="${!cpus_var}"
-    VM_DEV_MEMORY="${!memory_var}"
-    VM_DEV_VRDEUSER="${!vrdeuser_var}"
-    VM_DEV_VRDEPASS="${!vrdepass_var}"
-    VM_DEV_VRDEADDRESS="${!vrdeaddress_var}"
-    VM_DEV_VRDEPORT="${!vrdeport_var}"
+    export VM_DEV_USER="${!user_var}"
+    export VM_DEV_PASS="${!pass_var}"
+    export VM_DEV_ADMINUSER="${!adminuser_var}"
+    export VM_DEV_ADMINPASS="${!adminpass_var}"
+    export VM_DEV_MACHINE="${!machine_var}"
+    export VM_DEV_CPUS="${!cpus_var}"
+    export VM_DEV_MEMORY="${!memory_var}"
+    export VM_DEV_VRDEUSER="${!vrdeuser_var}"
+    export VM_DEV_VRDEPASS="${!vrdepass_var}"
+    export VM_DEV_VRDEADDRESS="${!vrdeaddress_var}"
+    export VM_DEV_VRDEPORT="${!vrdeport_var}"
 }
 
 vm_unload_conf() {
