@@ -1,0 +1,42 @@
+machine:
+  name: JenkinsTestAgent
+  description: Jenkins test agent
+  memory: 4096
+  cpus: 2
+  user: User
+  pass: Demo
+  adminuser: Administrator
+  adminpass: Demo
+vrde:
+  enabled: yes
+  address: 0.0.0.0
+  port: 0303
+  user: lfern
+  pass: Demo
+
+installscript:
+  - echo \"Installing vs desktop...\"
+  - vm-install-vs-desktop
+  - echo \"Installing choco...\"
+  - vm-install-choco
+  - echo \"Installing git...\"
+  - vm-install-git
+  - vm-install-gitpath
+  - vm-install-carbon
+  - echo \"Setting powershell policy remotesigned...\"
+  - vm_powershell Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine
+  - echo \"Grant service logon to user\"
+  - vm_powershell \"Import-Module \'Carbon\';Grant-CPrivilege -Identity \"\$VM_DEV_USER\" -Privilege SeServiceLogonRight\"
+  - vm_run \"mkdir c:\\Users\\User\\.ssh\"
+  - vm_run \"ssh-keyscan -H bitbucket.org >> c:\\Users\\User\\.ssh\\known_hosts\"
+  - vm-login-user
+  - echo \"Installing rust...\"
+  - vm-install-rust
+  - vm-logoff
+  - echo \"Stop machine...\"
+  - vm_stop
+  - vm_wait_windows_stopped
+  - echo \"Start headless\"
+  - vm_start_headless
+  - vm-wait4run
+  - vm_run cargo install cargo-make

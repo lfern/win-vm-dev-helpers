@@ -1,0 +1,27 @@
+#!/bin/bash
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+. "$SCRIPT_DIR/vm-lib.sh"
+
+track_last_command
+set -e
+
+echo "Importing ova ..."
+"$SCRIPT_DIR/import-ova" ./*.ova
+echo "Setting VRDE config"
+"$SCRIPT_DIR/vm-set-vrde"
+"$SCRIPT_DIR/vm-set-vrde-user" "$VM_DEV_VRDEUSER" "$VM_DEV_VRDEPASS"
+echo "Init..."
+"$SCRIPT_DIR/vm-init"
+echo "Start headless"
+vm_start_headless
+"$SCRIPT_DIR/vm-wait4run"
+
+index=1
+prefix=$(vm_config_prefix)
+while : ; do
+    combined="${prefix}installscript_${index}"
+    if [ -z ${!combined+x} ]; then break; fi
+    echo $index "->" "${!combined}"
+    eval "${!combined}"
+    index=$((index+1))
+done

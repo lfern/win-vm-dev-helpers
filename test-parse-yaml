@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# include parse_yaml function
+. bin/vm-lib.sh
+
+# read yaml file
+vm_load_conf "$1"
+trap "vm_unload_conf" EXIT
+
+vm_show_conf
+
