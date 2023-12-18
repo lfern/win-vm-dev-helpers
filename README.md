@@ -21,6 +21,8 @@ export VM_DEV_MEMORY=4096
 export VM_DEV_VRDEUSER=your-username-for-vrde
 # VRDE Password
 export VM_DEV_VRDEPASS=password-for-vrde
+# VRDE Port
+export VM_DEV_VRDE_PORT=5555
 # Jenkins base URL
 export VM_DEV_JENKINS_URL=jenkins-base-url
 ``` 
@@ -45,6 +47,8 @@ download-win-vm
 import-ova *.ova
 # Enable VRDE (0.0.0.0) and set VRDE credentials (if needed)
 vm-set-vrde "$VM_DEV_VRDEUSER" "$VM_DEV_VRDEPASS"
+# Disable (if necesary) 3D acceleration
+vm_disable_3d_accel
 # Initialize VM (Activate Administrator User,
 #  set Administrator password, set User password
 #  and disable UAC

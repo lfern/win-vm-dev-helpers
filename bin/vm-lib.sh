@@ -661,3 +661,11 @@ vm_show_conf() {
         index=$((index+1))
     done
 }
+
+vm_disable_3d_accel() {
+    VBoxManage modifyvm "$VM_DEV_MACHINE" --accelerate3d off
+}
+
+vm_enable_3d_accel() {
+    VBoxManage modifyvm "$VM_DEV_MACHINE" --accelerate3d on
+}
